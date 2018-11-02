@@ -53,10 +53,10 @@ Tempfile.open('temp_tower', ENV['TMPDIR']) do |f|
   step = 0
   before_layer_gcode = (0..max_layers).step(max_layers / max_steps).map do |layer|
     step += 1
-    "{if layer_z=#{layer}} M104 #{min_temp + (step - 1) * iteration} {endif}"
+    "{if layer_z==#{layer + 1}} M104 S#{min_temp + (step - 1) * iteration} {endif}"
   end
   puts before_layer_gcode
-  f.puts(File.read('Pretty_PLA_V3.ini').gsub(/before_layer_gcode =(.*)$/, "before_layer_gcode=#{}"))
+  f.puts(File.read('Pretty_PLA_V3.ini').gsub(/before_layer_gcode =.*$/, "before_layer_gcode=#{before_layer_gcode.join('\n')}"))
   puts "Slicing file with Slic3r"
   %x{#{SLIC3R_EXEC} temp_tower.stl --load #{f.path} --output temp_tower.gcode}
 end
