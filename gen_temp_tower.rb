@@ -18,17 +18,16 @@
 
 require 'tempfile'
 
-OPENSCAD_EXEC = '/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD'
-SLIC3R_EXEC = '/Applications/Slic3r.app/Contents/MacOS/Slic3r'
+OPENSCAD_EXEC = ENV['OPENSCAD_EXEC'] || '/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD'
+SLIC3R_EXEC = ENV['SLIC3R_EXEC'] ||'/Applications/Slic3r.app/Contents/MacOS/Slic3r'
 
-max_temp = 250
+max_temp = 230
 min_temp = 200
-iteration = 10
+iteration = 5
 
-cube_height = 10
+cube_height = 5
 max_steps = (max_temp - min_temp) / iteration
-layer_height = 0.2
-max_layers = (max_steps * cube_height / layer_height).round
+max_height = max_steps * cube_height
 
 openscad_file = %Q(
   max_temp = #{max_temp};
@@ -39,6 +38,7 @@ openscad_file = %Q(
       translate([0,0, i * #{cube_height}]) {
         difference() {
           cube([10, 10, #{cube_height}]);
+          translate([0, .2, .1])
           rotate([90, 0, 0])
           linear_extrude(height=1) text(str(min_temp + (i * iteration)), size=2);
         }
@@ -51,12 +51,16 @@ puts "Generation STL file"
 
 Tempfile.open('temp_tower', ENV['TMPDIR']) do |f|
   step = 0
-  before_layer_gcode = (0..max_layers).step(max_layers / max_steps).map do |layer|
+  before_layer_gcode = (0..max_height).step(max_steps).map do |layer_height|
     step += 1
-    "{if layer_z==#{layer + 1}} M104 S#{min_temp + (step - 1) * iteration} {endif}"
+    "{if layer_z==#{layer_height + 1}.00}M109 R#{min_temp + (step - 1) * iteration} {endif}"
   end
   puts before_layer_gcode
-  f.puts(File.read('Pretty_PLA_V3.ini').gsub(/before_layer_gcode =.*$/, "before_layer_gcode=#{before_layer_gcode.join('\n')}"))
+  new_config = File.read('Pretty_PLA_V3.ini')
+                   .gsub(/before_layer_gcode =.*$/, "before_layer_gcode=#{before_layer_gcode.join('\n')}")
+                   .gsub(/^temperature =.*$/, "temperature = #{min_temp}\n")
+  f.puts(new_config)
+  f.flush
   puts "Slicing file with Slic3r"
   %x{#{SLIC3R_EXEC} temp_tower.stl --load #{f.path} --output temp_tower.gcode}
 end
