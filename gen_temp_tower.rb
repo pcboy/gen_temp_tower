@@ -30,7 +30,6 @@ opts = Optimist::options do
   opt :slic3r_exec, "Path to slic3r executable. (add --no-gui parameter on linux)", default: '/Applications/Slic3r.app/Contents/MacOS/Slic3r'
 end
 
-
 OPENSCAD_EXEC = ENV['OPENSCAD_EXEC'] || opts[:openscad_exec]
 SLIC3R_EXEC = ENV['SLIC3R_EXEC'] || opts[:slic3r_exec]
 
@@ -59,9 +58,13 @@ openscad_file = %Q(
       }
 )
 
-open('temp_tower.scad', 'w') {|f| f.puts(openscad_file) }
+output_dir = './temp_tower_output'
+FileUtils.mkdir_p output_dir
+
+open("#{output_dir}/temp_tower.scad", 'w') {|f| f.puts(openscad_file) }
 puts "Generation STL file"
-%x{#{OPENSCAD_EXEC}  temp_tower.scad -o temp_tower.stl}
+%x{#{OPENSCAD_EXEC}  temp_tower.scad -o #{output_dir}/temp_tower.stl}
+
 
 Tempfile.open('temp_tower', ENV['TMPDIR']) do |f|
   step = 0
@@ -76,6 +79,6 @@ Tempfile.open('temp_tower', ENV['TMPDIR']) do |f|
   f.puts(new_config)
   f.flush
   puts "Slicing file with Slic3r"
-  %x{#{SLIC3R_EXEC} temp_tower.stl --load #{f.path} --output temp_tower.gcode}
+  %x{#{SLIC3R_EXEC} temp_tower.stl --load #{f.path} --output #{output_dir}/temp_tower.gcode}
 end
 

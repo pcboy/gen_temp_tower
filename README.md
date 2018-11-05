@@ -44,7 +44,7 @@ Slicing file with Slic3r
 $>
 ```
 
-You should then get a temp\_tower.stl file in the current directory, and a temp\_tower.gcode with the proper gcode dealing with the temperature change.
+You should then get a temp\_tower.stl file in the temp_tower_output/ directory, and a temp\_tower.gcode in that same dir with the proper gcode dealing with the temperature change.
 This temp tower will test the temperatures from 200C to 250C with an iteration of 10C between each step.
 
 You can also specify the path to openscad and Slic3r if they don't match the default ones. For instance on Linux I use an appImage of Slic3r PE and I have to add --no-gui to use it as a cli tool.
