@@ -63,7 +63,7 @@ FileUtils.mkdir_p output_dir
 
 open("#{output_dir}/temp_tower.scad", 'w') {|f| f.puts(openscad_file) }
 puts "Generation STL file"
-%x{#{OPENSCAD_EXEC}  temp_tower.scad -o #{output_dir}/temp_tower.stl}
+%x{#{OPENSCAD_EXEC}  #{output_dir}/temp_tower.scad -o #{output_dir}/temp_tower.stl}
 
 
 Tempfile.open('temp_tower', ENV['TMPDIR']) do |f|
@@ -79,6 +79,6 @@ Tempfile.open('temp_tower', ENV['TMPDIR']) do |f|
   f.puts(new_config)
   f.flush
   puts "Slicing file with Slic3r"
-  %x{#{SLIC3R_EXEC} temp_tower.stl --load #{f.path} --output #{output_dir}/temp_tower.gcode}
+  %x{#{SLIC3R_EXEC} #{output_dir}/temp_tower.stl --load #{f.path} --output #{output_dir}/temp_tower.gcode}
 end
 
