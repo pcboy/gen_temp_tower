@@ -4,7 +4,7 @@ A script to generate temperature towers gcode dynamically.
 I included a profile for the Prusa MK3 already but you can use your own slic3r config too.
 
 # Dependencies
-You need to install to have OpenSCAD and Slic3rPE installed.
+You need to install to have OpenSCAD and Slic3rPE installed. Unless you use the Dockerfile.
 
 # Installation
 
@@ -13,6 +13,20 @@ Just do:
 ```
 $> make
 ```
+
+There is also a Dockerfile in there if you want:
+
+```
+$> make docker
+```
+
+You can call gen\_temp\_tower like that:
+
+```
+$> docker run -v `pwd`/profiles:/root/profiles -v `pwd`/temp_tower_output:/root/temp_tower_output gen_temp_tower --from-temp 200
+```
+
+You'll get the resulting gcode file in ./temp\_tower\_output folder.
 
 # Usage
 
